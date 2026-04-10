@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T&J Computer Services Portal</title>
+    <style>
+        :root {
+            --bg: #0d0f12;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --accent: #00d2ff;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Top Bar Navigation */
+        .top-bar {
+            height: 60px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .time-display {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+            color: var(--text);
+            opacity: 0.8;
+            text-align: right;
+            line-height: 1.3;
+        }
+
+        .profile-icon {
+            width: 35px;
+            height: 35px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Main Content Split */
+        .main-container {
+            display: flex;
+            padding-top: 60px;
+            height: calc(100vh - 60px);
+        }
+
+        /* Left Section: App Grid */
+        .app-grid {
+            width: 55%;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        .app-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 20px;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .app-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .favicon-wrapper {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .favicon-wrapper img {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+        }
+
+        .app-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        /* Right Section: Widgets */
+        .widget-sidebar {
+            width: 45%;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .widget-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 280px;
+        }
+
+        .widget {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .widget.expand {
+            flex-grow: 1;
+            min-height: 0;
+            margin-bottom: 20px;
+        }
+
+        .widget-header {
+            padding: 15px 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .widget-content {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="top-bar">
+        <div class="logo-text">T&J Computer Services - Company Apps Portal</div>
+        <div class="header-right">
+            <div class="time-display" id="clock">
+                </div>
+            <div class="profile-icon">👤</div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="app-grid">
+            <a href="https://docs.google.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=docs.google.com&sz=64" alt="Icon"></div>
+                <span class="app-name">Google Docs</span>
+            </a>
+            <a href="https://calendar.google.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=calendar.google.com&sz=64" alt="Icon"></div>
+                <span class="app-name">Google Calendar</span>
+            </a>
+            <a href="https://godaddy.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=godaddy.com&sz=64" alt="Icon"></div>
+                <span class="app-name">GoDaddy</span>
+            </a>
+            <a href="https://gemini.google.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=gemini.google.com&sz=64" alt="Icon"></div>
+                <span class="app-name">Gemini</span>
+            </a>
+            <a href="https://email.tnjwebdesign.ca/" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=outlook.office.com&sz=64" alt="Icon"></div>
+                <span class="app-name">M365 Outlook</span>
+            </a>
+            <a href="https://github.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=github.com&sz=64" alt="Icon"></div>
+                <span class="app-name">GitHub</span>
+            </a>
+            <a href="https://n8n.io" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=n8n.io&sz=64" alt="Icon"></div>
+                <span class="app-name">n8n</span>
+            </a>
+            <a href="https://retellai.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=retellai.com&sz=64" alt="Icon"></div>
+                <span class="app-name">Retell AI</span>
+            </a>
+            <a href="https://elevenlabs.io" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=elevenlabs.io&sz=64" alt="Icon"></div>
+                <span class="app-name">ElevenLabs</span>
+            </a>
+            <a href="https://twilio.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=twilio.com&sz=64" alt="Icon"></div>
+                <span class="app-name">Twilio</span>
+            </a>
+            <a href="https://notebooklm.google.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=notebooklm.google.com&sz=64" alt="Icon"></div>
+                <span class="app-name">NotebookLM</span>
+            </a>
+            <a href="https://www.ontario.ca/page/business-services" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=ontario.ca&sz=64" alt="Icon"></div>
+                <span class="app-name">Ontario Business</span>
+            </a>
+            <a href="https://facebook.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=facebook.com&sz=64" alt="Icon"></div>
+                <span class="app-name">Facebook</span>
+            </a>
+            <a href="https://instagram.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=instagram.com&sz=64" alt="Icon"></div>
+                <span class="app-name">Instagram</span>
+            </a>
+            <a href="https://studio.youtube.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=64" alt="Icon"></div>
+                <span class="app-name">YouTube Studio</span>
+            </a>
+            <a href="https://mapquest.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=mapquest.com&sz=64" alt="Icon"></div>
+                <span class="app-name">MapQuest.com</span>
+            </a>
+            <a href="https://mindmup.com" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=mindmup.com&sz=64" alt="Icon"></div>
+                <span class="app-name">MindMup.com</span>
+            </a>
+            <a href="https://tnjwebdesign.ca" class="app-card" target="_blank">
+                <div class="favicon-wrapper"><img src="https://www.google.com/s2/favicons?domain=tnjwebdesign.ca&sz=64" alt="Icon"></div>
+                <span class="app-name">tnjwebdesign.ca</span>
+            </a>
+        </div>
+
+        <div class="widget-sidebar">
+            <div class="widget-row">
+                <div class="widget">
+                    <div class="widget-header">Weather: Ontario</div>
+                    <div class="widget-content">
+                        <iframe src="https://www.meteoblue.com/en/weather/widget/three/toronto_canada_6167865?geoloc=fixed&nocurrent=0&nooo=0&days=4&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&layout=dark"></iframe>
+                    </div>
+                </div>
+                <div class="widget">
+                    <div class="widget-header">Maps - Operations</div>
+                    <div class="widget-content">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d184551.8085834893!2d-79.518141!3d43.718155!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89d4cb90d7c63ba5%3A0x323555502fc4c02!2sToronto%2C%20ON!5e0!3m2!1sen!2sca!4v1712255000000!5m2!1sen!2sca" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+            <div class="widget expand">
+                <div class="widget-header">Daily Log: Twos</div>
+                <div class="widget-content">
+                    <iframe src="https://www.twosapp.com/"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+
+            // MM-DD-YYYY for Toronto
+            const dateOptions = { timeZone: 'America/Toronto', month: '2-digit', day: '2-digit', year: 'numeric' };
+            const dateStr = new Intl.DateTimeFormat('en-US', dateOptions).format(now).replace(/\//g, '-');
+
+            // HH:MM:SS for Toronto
+            const timeOptions = { timeZone: 'America/Toronto', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const torontoTime = new Intl.DateTimeFormat('en-US', timeOptions).format(now);
+
+            // Zulu Time
+            const zuluTime = now.toISOString().split('T')[1].split('.')[0] + 'Z';
+
+            document.getElementById('clock').innerHTML = `${dateStr}<br>${torontoTime} | ${zuluTime}`;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+
+</body>
+</html>
