@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16252f">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Inventory Tracker</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <noscript>
+        <p class="noscript">This app needs JavaScript turned on to work.</p>
+    </noscript>
+
+    <!-- ============================================================
+       LOCK SCREEN  (shown until the correct password is entered)
+       ============================================================ -->
+    <main id="lock-screen" class="lock" hidden>
+        <form id="lock-form" class="lock-card" autocomplete="on">
+            <h1 class="lock-title">Inventory</h1>
+            <p class="lock-hint">Enter the password to open the stock list.</p>
+
+            <label class="field">
+                <span class="field-label">Password</span>
+                <input id="lock-input" type="password" name="password" autocomplete="current-password" inputmode="text"
+                    required autofocus>
+            </label>
+
+            <p id="lock-error" class="form-error" role="alert" hidden></p>
+            <p id="lock-notice" class="form-notice" hidden></p>
+
+            <button class="btn btn-primary btn-block" type="submit" id="lock-submit">Unlock</button>
+        </form>
+    </main>
+
+    <!-- ============================================================
+       MAIN APP
+       ============================================================ -->
+    <div id="app" hidden>
+
+        <header class="app-header">
+            <h1 class="app-title">Inventory</h1>
+            <div class="header-right">
+                <span id="sync" class="sync" data-state="connecting" role="status" aria-live="polite">
+                    <span class="sync-dot" aria-hidden="true"></span>
+                    <span id="sync-label">Connecting…</span>
+                </span>
+                <button id="lock-btn" class="btn btn-header" type="button">Lock</button>
+            </div>
+        </header>
+
+        <p id="default-pw-banner" class="banner" hidden>
+            You are still using the default password. Replace <code>PASSWORD_HASH</code> in <code>app.js</code> (see
+            README).
+        </p>
+
+        <div class="wrap">
+
+            <!-- Summary bar -->
+            <section class="summary" aria-label="Inventory summary">
+                <div class="stat">
+                    <span class="stat-value" id="stat-items">0</span>
+                    <span class="stat-label">Items</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="stat-units">0</span>
+                    <span class="stat-label">Units in stock</span>
+                </div>
+                <div class="stat stat-warn" id="stat-low-box">
+                    <span class="stat-value" id="stat-low">0</span>
+                    <span class="stat-label">Low stock <span id="stat-out-note" class="stat-note"></span></span>
+                </div>
+            </section>
+
+            <!-- Search + filters -->
+            <section class="toolbar" aria-label="Search and filters">
+                <input id="search" class="input" type="search" placeholder="Search name or SKU"
+                    aria-label="Search by name or SKU" autocomplete="off">
+                <select id="category-filter" class="input" aria-label="Filter by category">
+                    <option value="">All categories</option>
+                </select>
+                <label class="switch">
+                    <input id="low-only" type="checkbox">
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span>Low stock only</span>
+                </label>
+                <button id="add-btn" class="btn btn-primary" type="button">Add item</button>
+            </section>
+
+            <!-- Loading / empty / error messages -->
+            <div id="state-box" class="state-box" hidden></div>
+
+            <!-- Desktop: table -->
+            <div id="table-wrap" class="table-wrap" hidden>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Item</th>
+                            <th scope="col">SKU</th>
+                            <th scope="col">Category</th>
+                            <th scope="col" class="col-qty">Quantity</th>
+                            <th scope="col" class="col-num">Low at</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Updated</th>
+                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows"></tbody>
+                </table>
+            </div>
+
+            <!-- Mobile: cards -->
+            <ul id="cards" class="cards" hidden></ul>
+
+        </div>
+    </div>
+
+    <!-- ============================================================
+       ADD / EDIT DIALOG
+       ============================================================ -->
+    <dialog id="item-dialog" class="dialog" aria-labelledby="item-dialog-title">
+        <form id="item-form" method="dialog" novalidate>
+            <h2 id="item-dialog-title" class="dialog-title">Add item</h2>
+
+            <label class="field">
+                <span class="field-label">Item name</span>
+                <input id="f-name" name="name" type="text" maxlength="120" required autocomplete="off">
+            </label>
+
+            <div class="field-row">
+                <label class="field">
+                    <span class="field-label">SKU / code <span class="optional">(optional)</span></span>
+                    <input id="f-sku" name="sku" type="text" maxlength="60" autocomplete="off">
+                </label>
+                <label class="field">
+                    <span class="field-label">Category</span>
+                    <input id="f-category" name="category" type="text" maxlength="60" list="category-list"
+                        autocomplete="off">
+                    <datalist id="category-list"></datalist>
+                </label>
+            </div>
+
+            <div class="field-row">
+                <label class="field">
+                    <span class="field-label">Quantity</span>
+                    <input id="f-quantity" name="quantity" type="number" min="0" step="1" inputmode="numeric" value="0"
+                        required>
+                </label>
+                <label class="field">
+                    <span class="field-label">Low-stock threshold</span>
+                    <input id="f-threshold" name="threshold" type="number" min="0" step="1" inputmode="numeric"
+                        value="5" required>
+                </label>
+            </div>
+
+            <label class="field">
+                <span class="field-label">Notes</span>
+                <textarea id="f-notes" name="notes" rows="3" maxlength="1000"></textarea>
+            </label>
+
+            <p id="item-form-error" class="form-error" role="alert" hidden></p>
+
+            <div class="dialog-actions">
+                <button class="btn btn-ghost" type="button" id="item-cancel">Cancel</button>
+                <button class="btn btn-primary" type="submit" id="item-save">Save item</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- ============================================================
+       DELETE CONFIRMATION
+       ============================================================ -->
+    <dialog id="confirm-dialog" class="dialog dialog-small" aria-labelledby="confirm-title">
+        <form method="dialog">
+            <h2 id="confirm-title" class="dialog-title">Delete this item?</h2>
+            <p id="confirm-text" class="dialog-text"></p>
+            <div class="dialog-actions">
+                <button class="btn btn-ghost" type="button" id="confirm-cancel">Keep item</button>
+                <button class="btn btn-danger" type="button" id="confirm-ok">Delete item</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Toast for errors and confirmations -->
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script type="module" src="app.js"></script>
+    changeme
+    changeme
+</body>
+</html>
