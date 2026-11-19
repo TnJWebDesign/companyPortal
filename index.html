@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0c">
+  <meta name="robots" content="noindex, nofollow">
+  <title>T&amp;J Company Portal</title>
+
+  <!-- Apply the saved light/dark theme before the page paints -->
+  <script>
+    try { if (localStorage.getItem("tj_theme") === "light") document.documentElement.classList.add("light"); } catch (e) {}
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Drag-and-drop for the task board (loaded before the app modules run) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" defer></script>
+</head>
+<body>
+
+  <noscript><p class="noscript">This app needs JavaScript turned on to work.</p></noscript>
+
+  <!-- ============================================================
+       LOCK SCREEN
+       ============================================================ -->
+  <main id="lock-screen" class="lock" hidden>
+    <form id="lock-form" class="lock-card" autocomplete="on">
+      <div class="brand brand-lock">
+        <span class="brand-mark">T&amp;J</span>
+        <span class="brand-sub">Company portal</span>
+      </div>
+      <p class="lock-hint">Enter the password to continue.</p>
+
+      <label class="field">
+        <span class="field-label">Password</span>
+        <input id="lock-input" type="password" name="password" autocomplete="current-password" required autofocus>
+      </label>
+
+      <p id="lock-error" class="form-error" role="alert" hidden></p>
+      <p id="lock-notice" class="form-notice" hidden></p>
+
+      <button class="btn btn-primary btn-block" type="submit" id="lock-submit">Unlock</button>
+    </form>
+  </main>
+
+  <!-- ============================================================
+       MAIN APP (dashboard + inventory)
+       ============================================================ -->
+  <div id="app" hidden>
+
+    <div class="chrome">
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand-mark">T&amp;J</span>
+          <span class="brand-sub">Company portal</span>
+        </div>
+
+        <div class="header-right">
+          <div class="clock" id="clock" aria-label="Current time"></div>
+
+          <span id="sync" class="sync" data-state="connecting" role="status" aria-live="polite">
+            <span class="sync-dot" aria-hidden="true"></span>
+            <span id="sync-label">Connecting…</span>
+          </span>
+
+          <button id="theme-btn" class="icon-btn" type="button" aria-label="Switch light or dark theme" title="Theme">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>
+          </button>
+          <button id="cmd-btn" class="icon-btn" type="button" aria-label="Open command console" title="Commands">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 6l7 6-7 6M13 18h7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"/></svg>
+          </button>
+          <button id="voice-btn" class="icon-btn" type="button" aria-label="Voice command" title="Voice" hidden>
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+          <button id="lock-btn" class="btn btn-header" type="button">Lock</button>
+        </div>
+      </header>
+
+      <nav class="tabs" role="tablist" aria-label="Sections">
+        <button class="tab" role="tab" type="button" data-view="dashboard" aria-selected="true">Dashboard</button>
+        <button class="tab" role="tab" type="button" data-view="inventory" aria-selected="false">Inventory</button>
+      </nav>
+    </div>
+
+    <p id="default-pw-banner" class="banner" hidden>
+      You are still using the default password. Replace <code>PASSWORD_HASH</code> in <code>app.js</code> (see README).
+    </p>
+
+    <!-- ========================= DASHBOARD VIEW ========================= -->
+    <main id="view-dashboard" class="view">
+      <div class="wrap dash-grid">
+
+        <section class="apps" id="apps" aria-label="Apps and links">
+          <!-- Filled in by portal.js from the APPS list -->
+        </section>
+
+        <aside class="widgets" aria-label="Widgets">
+
+          <!-- Inventory status -->
+          <section class="widget" id="w-inventory">
+            <h2 class="widget-title">Stock alert</h2>
+            <div class="stars" id="w-stars" aria-label="Stock alert level"></div>
+            <div class="mini-stats">
+              <div><span class="mini-num" id="w-items">—</span><span class="mini-label">Items</span></div>
+              <div><span class="mini-num" id="w-units">—</span><span class="mini-label">Units</span></div>
+              <div><span class="mini-num" id="w-low">—</span><span class="mini-label">Low or out</span></div>
+            </div>
+            <ul class="alert-list" id="w-alerts"></ul>
+            <button class="btn btn-primary btn-block" type="button" data-goto="inventory">Open inventory</button>
+          </section>
+
+          <!-- Weather -->
+          <section class="widget">
+            <h2 class="widget-title">Weather</h2>
+            <div id="weather" class="weather">Loading…</div>
+          </section>
+
+          <!-- Map -->
+          <section class="widget">
+            <h2 class="widget-title">Operations map</h2>
+            <iframe class="map" title="Operations map"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d184551.8085834893!2d-79.518141!3d43.718155"
+              loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </section>
+
+          <!-- Task board -->
+          <section class="widget">
+            <h2 class="widget-title">Task board</h2>
+            <form id="task-form" class="task-form">
+              <input id="task-input" class="input" type="text" maxlength="120" placeholder="New task" aria-label="New task">
+              <button class="btn btn-ghost" type="submit">Add</button>
+            </form>
+            <div class="board">
+              <div class="column">
+                <h3>To do</h3>
+                <div class="task-list" id="todo"></div>
+              </div>
+              <div class="column">
+                <h3>In progress</h3>
+                <div class="task-list" id="progress"></div>
+              </div>
+              <div class="column">
+                <h3>Done</h3>
+                <div class="task-list" id="done"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Uptime -->
+          <section class="widget">
+            <h2 class="widget-title">Uptime</h2>
+            <ul class="uptime" id="uptime"></ul>
+            <button class="btn btn-ghost btn-small" type="button" id="uptime-refresh">Check now</button>
+          </section>
+
+        </aside>
+      </div>
+    </main>
+
+    <!-- ========================= INVENTORY VIEW ========================= -->
+    <main id="view-inventory" class="view" hidden>
+      <div class="wrap">
+
+        <!-- Summary bar -->
+        <section class="summary" aria-label="Inventory summary">
+          <div class="stat">
+            <span class="stat-value" id="stat-items">0</span>
+            <span class="stat-label">Items</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="stat-units">0</span>
+            <span class="stat-label">Units in stock</span>
+          </div>
+          <div class="stat stat-warn" id="stat-low-box">
+            <span class="stat-value" id="stat-low">0</span>
+            <span class="stat-label">Low stock <span id="stat-out-note" class="stat-note"></span></span>
+          </div>
+        </section>
+
+        <!-- Search + filters -->
+        <section class="toolbar" aria-label="Search and filters">
+          <input id="search" class="input" type="search" placeholder="Search name or SKU" aria-label="Search by name or SKU" autocomplete="off">
+          <select id="category-filter" class="input" aria-label="Filter by category">
+            <option value="">All categories</option>
+          </select>
+          <label class="switch">
+            <input id="low-only" type="checkbox">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span>Low stock only</span>
+          </label>
+          <button id="add-btn" class="btn btn-primary" type="button">Add item</button>
+        </section>
+
+        <!-- Loading / empty / error messages -->
+        <div id="state-box" class="state-box" hidden></div>
+
+        <!-- Desktop: table -->
+        <div id="table-wrap" class="table-wrap" hidden>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th scope="col">Item</th>
+                <th scope="col">SKU</th>
+                <th scope="col">Category</th>
+                <th scope="col" class="col-qty">Quantity</th>
+                <th scope="col" class="col-num">Low at</th>
+                <th scope="col">Status</th>
+                <th scope="col">Updated</th>
+                <th scope="col"><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+
+        <!-- Mobile: cards -->
+        <ul id="cards" class="cards" hidden></ul>
+
+      </div>
+    </main>
+
+    <!-- ========================= COMMAND CONSOLE ========================= -->
+    <aside id="console" class="console" aria-label="Command console" aria-hidden="true">
+      <div class="console-head">
+        <h2>Command console</h2>
+        <button id="console-close" class="icon-btn" type="button" aria-label="Close command console">&times;</button>
+      </div>
+      <p class="console-hint">Type or speak a command. Try <code>help</code>.</p>
+      <div id="console-log" class="console-log" aria-live="polite"></div>
+      <form id="console-form">
+        <input id="console-input" class="input" type="text" placeholder="Type a command" autocomplete="off" aria-label="Command">
+      </form>
+    </aside>
+
+  </div>
+
+  <!-- ============================================================
+       ADD / EDIT DIALOG
+       ============================================================ -->
+  <dialog id="item-dialog" class="dialog" aria-labelledby="item-dialog-title">
+    <form id="item-form" method="dialog" novalidate>
+      <h2 id="item-dialog-title" class="dialog-title">Add item</h2>
+
+      <label class="field">
+        <span class="field-label">Item name</span>
+        <input id="f-name" name="name" type="text" maxlength="120" required autocomplete="off">
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">SKU / code <span class="optional">(optional)</span></span>
+          <input id="f-sku" name="sku" type="text" maxlength="60" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field-label">Category</span>
+          <input id="f-category" name="category" type="text" maxlength="60" list="category-list" autocomplete="off">
+          <datalist id="category-list"></datalist>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Quantity</span>
+          <input id="f-quantity" name="quantity" type="number" min="0" step="1" inputmode="numeric" value="0" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Low-stock threshold</span>
+          <input id="f-threshold" name="threshold" type="number" min="0" step="1" inputmode="numeric" value="5" required>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">Notes</span>
+        <textarea id="f-notes" name="notes" rows="3" maxlength="1000"></textarea>
+      </label>
+
+      <p id="item-form-error" class="form-error" role="alert" hidden></p>
+
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" type="button" id="item-cancel">Cancel</button>
+        <button class="btn btn-primary" type="submit" id="item-save">Save item</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ============================================================
+       DELETE CONFIRMATION
+       ============================================================ -->
+  <dialog id="confirm-dialog" class="dialog dialog-small" aria-labelledby="confirm-title">
+    <form method="dialog">
+      <h2 id="confirm-title" class="dialog-title">Delete this item?</h2>
+      <p id="confirm-text" class="dialog-text"></p>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" type="button" id="confirm-cancel">Keep item</button>
+        <button class="btn btn-danger" type="button" id="confirm-ok">Delete item</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Toast for errors and confirmations -->
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- portal.js must load first so it is listening when app.js announces unlock/lock -->
+  <script type="module" src="portal.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
